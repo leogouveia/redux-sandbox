@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 import ReactDOM from "react-dom";
 import { combineReducers, createStore } from "redux";
 import { Provider, connect } from "react-redux";
@@ -49,18 +49,20 @@ const todoApp = combineReducers({
 });
 
 //#region Presentational Components
-const Link =({ active, children, onClick }) => {
+const Link = ({ active, children, onClick }) => {
   if (active) {
     return <span>{children}</span>;
   }
   return (
-    <a href="#"
+    <a
+      href="#"
       onClick={e => {
         e.preventDefault();
         onClick();
-      }} >
-        {children}
-      </a>
+      }}
+    >
+      {children}
+    </a>
   );
 };
 
@@ -68,17 +70,11 @@ const Footer = () => {
   return (
     <p>
       Show: &nbsp;
-      <FilterLink filter="SHOW_ALL">
-        All
-      </FilterLink>
+      <FilterLink filter="SHOW_ALL">All</FilterLink>
       {" | "}
-      <FilterLink filter="SHOW_ACTIVE">
-        Active
-      </FilterLink>
+      <FilterLink filter="SHOW_ACTIVE">Active</FilterLink>
       {" | "}
-      <FilterLink filter="SHOW_COMPLETED">
-        Completed
-      </FilterLink>
+      <FilterLink filter="SHOW_COMPLETED">Completed</FilterLink>
     </p>
   );
 };
@@ -107,7 +103,6 @@ const TodoList = ({ todos, onTodoClick }) => {
   );
 };
 
-
 let AddTodo = ({ dispatch }) => {
   let input;
   return (
@@ -133,50 +128,25 @@ AddTodo = connect()(AddTodo);
 //#endregion Presentational Components
 
 //Container Component
-const mapStateFilterLinkToProps = (state) => {
+const mapStateLinkToProps = (state, ownProps) => {
   return {
-    filter: state.visibilityFilter,
+    active: ownProps.filter === state.visibilityFilter
+  };
+};
 
-  }
-}
-const mapDispatchFilterLinkToProps = (dispatch) => {
+const mapDispatchLinkToProps = (dispatch, ownProps) => {
   return {
-    onClick: (filter) => 
+    onClick: () =>
       dispatch({
-        type: 'SET_VISIBILITY_FILTER',
-        filter: filter
+        type: "SET_VISIBILITY_FILTER",
+        filter: ownProps.filter
       })
-  }
-}
-class FilterLink extends Component {
-  componentDidMount() {
-    const { store } = this.context;
-    this.unsubscribe = store.subscribe(() => this.forceUpdate());
-  }
-  componentWillUnmount() {
-    this.unsubscribe();
-  }
-
-  render() {
-    const props = this.props;
-    const { store } = this.context;
-    const state = store.getState();
-
-    return (
-      <Link
-        active={ props.filter === state.visibilityFilter }
-        onClick={(filter) => 
-          store.dispatch({
-            type: 'SET_VISIBILITY_FILTER',
-            filter: props.filter
-          })
-        }> {props.children} </Link>
-    );
-  }
-}
-FilterLink.contextTypes = {
-store: PropTypes.object
-}
+  };
+};
+const FilterLink = connect(
+  mapStateLinkToProps,
+  mapDispatchLinkToProps
+)(Link);
 
 const getVisibleTodos = (todos, filter) => {
   switch (filter) {
@@ -191,24 +161,21 @@ const getVisibleTodos = (todos, filter) => {
   }
 };
 
-const mapStateTodoListToProps = (state) => {
+const mapStateTodoListToProps = state => {
   return {
-    todos: getVisibleTodos(
-      state.todos,
-      state.visibilityFilter
-    )
-  }
-}
+    todos: getVisibleTodos(state.todos, state.visibilityFilter)
+  };
+};
 
-const mapDispatchTodoListToProps = (dispatch) => {
+const mapDispatchTodoListToProps = dispatch => {
   return {
-    onTodoClick: id => 
+    onTodoClick: id =>
       dispatch({
         type: "TOGGLE_TODO",
         id
       })
-  }
-}
+  };
+};
 const VisibleTodoList = connect(
   mapStateTodoListToProps,
   mapDispatchTodoListToProps
@@ -216,11 +183,11 @@ const VisibleTodoList = connect(
 
 let nextTodoId = 0;
 const TodoApp = () => (
-   <div>
-      <AddTodo />
-      <VisibleTodoList />
-      <Footer />
-    </div>
+  <div>
+    <AddTodo />
+    <VisibleTodoList />
+    <Footer />
+  </div>
 );
 
 ReactDOM.render(
